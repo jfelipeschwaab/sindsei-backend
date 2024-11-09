@@ -20,17 +20,13 @@ def login_user(request):
     email = request.data.get('email')
     password = request.data.get('password')
 
-    # Verifique se o email e a senha foram fornecidos
     if email is None or password is None:
         return Response({'error': 'Por favor, forneça email e senha.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # Busca o usuário pelo email fornecido
         user = User.objects.get(email=email)
 
-        # Verifique se a senha fornecida corresponde à senha do usuário
         if check_password(password, user.password):
-            # Retorna os dados do usuário (sem iniciar uma sessão)
             return Response({
                 'message': 'Login bem-sucedido',
                 'user': UserSerializer(user).data
