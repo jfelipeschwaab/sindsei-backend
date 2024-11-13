@@ -8,7 +8,7 @@ import requests
 from dotenv import load_dotenv
 
 # Carregar variáveis do arquivo .env
-load_dotenv()
+load_dotenv(override=True)
 
 # Configurações do Firebase usando variáveis de ambiente
 FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID')
@@ -17,17 +17,27 @@ CREDENTIALS_FILE = os.getenv('CREDENTIALS_FILE')
 
 def get_access_token():
     """Gera um token de acesso usando a conta de serviço."""
-    credentials = service_account.Credentials.from_service_account_file(
-        CREDENTIALS_FILE,
-        scopes=["https://www.googleapis.com/auth/cloud-platform"]
-    )
-    credentials.refresh(Request())
-    return credentials.token
+    try:
+        print(f"CREDENTIALS_FILE: {CREDENTIALS_FILE}")
+        credentials = service_account.Credentials.from_service_account_file(
+            CREDENTIALS_FILE,
+            scopes=["https://www.googleapis.com/auth/cloud-platform"]
+        )
+        credentials.refresh(Request())
+        access_token = credentials.token
+        print(f"Access Token: {access_token}")
+        return access_token
+    except Exception as e:
+        print("Erro ao gerar o token de acesso:", e)
+        raise e
 
 @api_view(['GET'])
 def get_emails(request):
     """View para buscar emails resumidos do Firestore."""
     try:
+        print(f"FIREBASE_PROJECT_ID: {FIREBASE_PROJECT_ID}")
+        print(f"FIREBASE_COLLECTION_NAME: {FIREBASE_COLLECTION_NAME}")
+        
         access_token = get_access_token()
         url = f'https://firestore.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/databases/(default)/documents/{FIREBASE_COLLECTION_NAME}'
         
@@ -37,7 +47,9 @@ def get_emails(request):
         }
         
         response = requests.get(url, headers=headers)
-        
+        print("Firestore response status:", response.status_code)
+        print("Firestore response content:", response.text)
+
         if response.status_code == 200:
             documents = response.json().get('documents', [])
             emails = []
@@ -55,8 +67,11 @@ def get_emails(request):
                 }
                 emails.append(email_data)
             
+            print("Emails encontrados:", emails)
             return Response(emails, status=status.HTTP_200_OK)
         else:
+            print("Erro ao buscar dados do Firestore:", response.status_code, response.text)
             return Response({"error": "Erro ao buscar dados do Firestore"}, status=response.status_code)
     except Exception as e:
+        print("Erro ao buscar emails:", e)
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
