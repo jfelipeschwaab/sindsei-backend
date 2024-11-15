@@ -36,7 +36,7 @@ Certifique-se de que está corretamente configurada em sua máquina.
 1. Clone o repositório em sua máquina:
 
 ```bash 
-git clone 
+git clone https://github.com/jfelipeschwaab/sindsei-backend.git
 ```
 
 2. Acesse o diretório do projeto:
