@@ -42,7 +42,7 @@ git clone https://github.com/jfelipeschwaab/sindsei-backend.git
 2. Acesse o diretório do projeto:
 
 ```bash
-cd seu_repositorio
+cd sindsei-backend
 ```
 
 3. Instale os requisitos necessários:
