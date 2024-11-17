@@ -60,12 +60,15 @@ MIDDLEWARE = [
 ]
 
 # Configuração de CORS
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')  # Define 'development' como padrão
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')  
 
-if ENVIRONMENT == 'production':
-    CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS_PROD', '').split(',')
-else:
-    CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS_DEV', '').split(',')
+CORS_ALLOWED_ORIGINS = (
+    os.getenv('CORS_ALLOWED_ORIGINS_PROD', '').split(',') +
+    os.getenv('CORS_ALLOWED_ORIGINS_DEV', '').split(',')
+)
+
+# Remove valores vazios da lista
+CORS_ALLOWED_ORIGINS = [origin for origin in CORS_ALLOWED_ORIGINS if origin]
 
 CORS_ALLOW_ALL_ORIGINS = False  # Recomendado para ambientes de produção
 
