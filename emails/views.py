@@ -13,7 +13,7 @@ FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID')
 FIREBASE_COLLECTION_NAME = os.getenv('FIREBASE_COLLECTION_NAME')
 CREDENTIALS_FILE = os.getenv('CREDENTIALS_FILE')
 
-WEBHOOK_URL = 'https://sindeseidf.app.n8n.cloud/webhook-test/9175ed07-c695-4ff5-a03a-9ab7102e6c3a'
+WEBHOOK_URL = os.getenv('WEBHOOK_URL_TEST')
 
 def get_access_token():
     """Gera um token de acesso usando a conta de serviço."""
@@ -46,10 +46,8 @@ def send_meetings(meetings):
 
         if response.status_code not in range(200, 300):
             print("Erro ao enviar dados para o webhook.")
-            # Opcional: implementar lógica de retry ou notificações
     except Exception as e:
         print("Erro ao enviar reuniões para o webhook:", e)
-        # Opcional: implementar lógica de tratamento de erros
 
 @api_view(['GET'])
 def get_emails(request):
