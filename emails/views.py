@@ -7,15 +7,12 @@ from rest_framework import status
 import requests
 from dotenv import load_dotenv
 
-# Carregar variáveis do arquivo .env
 load_dotenv(override=True)
 
-# Configurações do Firebase usando variáveis de ambiente
 FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID')
 FIREBASE_COLLECTION_NAME = os.getenv('FIREBASE_COLLECTION_NAME')
 CREDENTIALS_FILE = os.getenv('CREDENTIALS_FILE')
 
-# URL do webhook para enviar reuniões
 WEBHOOK_URL = 'https://sindeseidf.app.n8n.cloud/webhook-test/9175ed07-c695-4ff5-a03a-9ab7102e6c3a'
 
 def get_access_token():
@@ -78,10 +75,8 @@ def get_emails(request):
             emails = []
             meetings_to_send = []
 
-            # Definir o separador utilizado nas reuniões (ajuste conforme necessário)
-            MEETING_SEPARATOR = ','  # Por exemplo, vírgula
+            MEETING_SEPARATOR = ','  
 
-            # Processar os dados dos documentos
             for doc in documents:
                 fields = doc.get('fields', {})
                 email_data = {
@@ -93,26 +88,21 @@ def get_emails(request):
                     "tag": fields.get("tag", {}).get("stringValue", "")
                 }
                 
-                # Extrair reuniões se existirem
                 meetings_str = email_data["meetings"]
                 if meetings_str:
-                    # Dividir as reuniões pelo separador definido
                     meetings = [meeting.strip() for meeting in meetings_str.split(MEETING_SEPARATOR) if meeting.strip()]
-                    # Para cada reunião, criar um objeto com subject e meeting
                     for meeting in meetings:
                         meeting_obj = {
                             "subject": email_data["subject"],
-                            "meeting": meeting  # Opcional: incluir o nome da reunião
+                            "meeting": meeting  
                         }
                         meetings_to_send.append(meeting_obj)
-                    # Opcional: manter as reuniões no formato original ou como string
-                    email_data["meetings"] = meetings_str  # Mantém como string para retorno
+                    email_data["meetings"] = meetings_str  
 
                 emails.append(email_data)
             
             print("Emails encontrados:", emails)
             
-            # Se houver reuniões, enviar para o webhook
             if meetings_to_send:
                 print("Reuniões a serem enviadas:", meetings_to_send)
                 send_meetings(meetings_to_send)
