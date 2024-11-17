@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-# Caminho do diretório base do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Carregar variáveis do arquivo .env
@@ -50,6 +49,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # CORS middleware deve ser o primeiro
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,15 +57,19 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-]
+# Configuração de CORS
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')  # Define 'development' como padrão
+
+if ENVIRONMENT == 'production':
+    CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS_PROD', '').split(',')
+else:
+    CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS_DEV', '').split(',')
+
+CORS_ALLOW_ALL_ORIGINS = False  # Recomendado para ambientes de produção
 
 ROOT_URLCONF = 'backend.urls'
-CORS_ALLOW_ALL_ORIGINS = True
 
 TEMPLATES = [
     {
