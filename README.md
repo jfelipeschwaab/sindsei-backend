@@ -86,7 +86,6 @@ Agradecemos a contribuição de todos os autores e orientadores do projeto.
 Autores:
 - Gabriel Tavares
 - Cauã Aguiar
-- Henrique Mendonça
 - Felipe Schwaab
 - Carol Zaiatz
 - Victor Praça
