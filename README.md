@@ -92,8 +92,7 @@ Autores:
 - Francisco Nascimento
 - Felipe Gaudereto
 - Bárbara Marques
-- Guilherme Leão
 
 Orientadores:
 - Francisco Javier
-- Marcos
+- Marcos Dias
