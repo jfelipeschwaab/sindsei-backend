@@ -27,9 +27,13 @@ def login_user(request):
         user = User.objects.get(email=email)
 
         if check_password(password, user.password):
+
+            token, _ = Token.objects.get_or_create(user=user)
+
             return Response({
                 'message': 'Login bem-sucedido',
-                'user': UserSerializer(user).data
+                'user': UserSerializer(user).data,
+                'token': token.key
             }, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Credenciais inválidas.'}, status=status.HTTP_400_BAD_REQUEST)
