@@ -12,8 +12,7 @@ load_dotenv(override=True)
 FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID')
 FIREBASE_COLLECTION_NAME = os.getenv('FIREBASE_COLLECTION_NAME')
 CREDENTIALS_FILE = os.getenv('CREDENTIALS_FILE')
-
-WEBHOOK_URL = 'https://sindeseidf.app.n8n.cloud/webhook-test/9175ed07-c695-4ff5-a03a-9ab7102e6c3a'
+FIREBASE_PENDING_COLLECTION = os.getenv('FIREBASE_PENDING_COLLECTION')
 
 def get_access_token():
     """Gera um token de acesso usando a conta de serviço."""
@@ -31,32 +30,12 @@ def get_access_token():
         print("Erro ao gerar o token de acesso:", e)
         raise e
 
-def send_meetings(meetings):
-    """Envia um array de reuniões para o webhook especificado via POST."""
-    try:
-        payload = {
-            "meetings": meetings
-        }
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        response = requests.post(WEBHOOK_URL, json=payload, headers=headers)
-        print(f"Webhook response status: {response.status_code}")
-        print(f"Webhook response content: {response.text}")
-
-        if response.status_code not in range(200, 300):
-            print("Erro ao enviar dados para o webhook.")
-            # Opcional: implementar lógica de retry ou notificações
-    except Exception as e:
-        print("Erro ao enviar reuniões para o webhook:", e)
-        # Opcional: implementar lógica de tratamento de erros
 
 @api_view(['GET'])
 def get_emails(request):
-    """View para buscar emails resumidos do Firestore e enviar reuniões ao webhook."""
+    """View para buscar emails resumidos (NÃO-REUNIÕES) do Firestore."""
     try:
-        print(f"FIREBASE_PROJECT_ID: {FIREBASE_PROJECT_ID}")
-        print(f"FIREBASE_COLLECTION_NAME: {FIREBASE_COLLECTION_NAME}")
+        print(f"Buscando da coleção: {FIREBASE_COLLECTION_NAME}")
         
         access_token = get_access_token()
         url = f'https://firestore.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/databases/(default)/documents/{FIREBASE_COLLECTION_NAME}'
@@ -67,15 +46,10 @@ def get_emails(request):
         }
         
         response = requests.get(url, headers=headers)
-        print("Firestore response status:", response.status_code)
-        print("Firestore response content:", response.text)
-
+        
         if response.status_code == 200:
             documents = response.json().get('documents', [])
             emails = []
-            meetings_to_send = []
-
-            MEETING_SEPARATOR = ','  
 
             for doc in documents:
                 fields = doc.get('fields', {})
@@ -87,30 +61,79 @@ def get_emails(request):
                     "summary": fields.get("summary", {}).get("stringValue", ""),
                     "tag": fields.get("tag", {}).get("stringValue", "")
                 }
-                
-                meetings_str = email_data["meetings"]
-                if meetings_str:
-                    meetings = [meeting.strip() for meeting in meetings_str.split(MEETING_SEPARATOR) if meeting.strip()]
-                    for meeting in meetings:
-                        meeting_obj = {
-                            "subject": email_data["subject"],
-                            "meeting": meeting  
-                        }
-                        meetings_to_send.append(meeting_obj)
-                    email_data["meetings"] = meetings_str  
-
                 emails.append(email_data)
             
-            print("Emails encontrados:", emails)
-            
-            if meetings_to_send:
-                print("Reuniões a serem enviadas:", meetings_to_send)
-                send_meetings(meetings_to_send)
-            
+            print(f"Emails encontrados: {len(emails)}")
             return Response(emails, status=status.HTTP_200_OK)
         else:
             print("Erro ao buscar dados do Firestore:", response.status_code, response.text)
             return Response({"error": "Erro ao buscar dados do Firestore"}, status=response.status_code)
     except Exception as e:
         print("Erro ao buscar emails:", e)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_pending_meetings(request):
+    """View para buscar as reuniões PENDENTES do Firestore."""
+    try:
+        print(f"Buscando da coleção: {FIREBASE_PENDING_COLLECTION}")
+        
+        access_token = get_access_token()
+        url = f'https://firestore.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/databases/(default)/documents/{FIREBASE_PENDING_COLLECTION}'
+        
+        # Filtro para pegar apenas reuniões com status "pending"
+        query_params = {
+            'structuredQuery': {
+                'from': [{'collectionId': FIREBASE_PENDING_COLLECTION}],
+                'where': {
+                    'fieldFilter': {
+                        'field': {'fieldPath': 'status'},
+                        'op': 'EQUAL',
+                        'value': {'stringValue': 'pending'}
+                    }
+                }
+            }
+        }
+        
+        # A URL muda para :runQuery para podermos usar filtros
+        url_query = f'https://firestore.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery'
+        
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.post(url_query, json=query_params, headers=headers)
+        
+        if response.status_code == 200:
+            documents_data = response.json()
+            meetings = []
+
+            for item in documents_data:
+                # O formato da resposta :runQuery é um pouco diferente
+                if 'document' in item:
+                    doc = item.get('document', {})
+                    fields = doc.get('fields', {})
+                    
+                    # Pegar o ID do documento
+                    # O ID está no 'name' do documento, ex: .../pending_meetings/ID_DO_DOC
+                    doc_id = doc.get('name', '').split('/')[-1]
+                    
+                    meeting_data = {
+                        "doc_id": doc_id, # Importante para o front-end saber qual ID aprovar
+                        "titulo": fields.get("titulo", {}).get("stringValue", ""),
+                        "data_inicio": fields.get("data_inicio", {}).get("stringValue", ""),
+                        "data_fim": fields.get("data_fim", {}).get("stringValue", ""),
+                        "status": fields.get("status", {}).get("stringValue", ""),
+                        "tem_conflito": fields.get("tem_conflito", {}).get("booleanValue", False)
+                    }
+                    meetings.append(meeting_data)
+            
+            print(f"Reuniões pendentes encontradas: {len(meetings)}")
+            return Response(meetings, status=status.HTTP_200_OK)
+        else:
+            print("Erro ao buscar reuniões:", response.status_code, response.text)
+            return Response({"error": "Erro ao buscar reuniões pendentes"}, status=response.status_code)
+    except Exception as e:
+        print("Erro em get_pending_meetings:", e)
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
