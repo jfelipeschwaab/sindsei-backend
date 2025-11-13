@@ -1,10 +1,11 @@
 import os
 from google.auth.transport.requests import Request
 from google.oauth2 import service_account
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import requests
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -30,7 +31,7 @@ def get_access_token():
         print("Erro ao gerar o token de acesso:", e)
         raise e
 
-
+@permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def get_emails(request):
     """View para buscar emails resumidos (NÃO-REUNIÕES) do Firestore."""
@@ -72,6 +73,7 @@ def get_emails(request):
         print("Erro ao buscar emails:", e)
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def get_pending_meetings(request):
     """View para buscar as reuniões PENDENTES do Firestore."""
