@@ -1,9 +1,4 @@
-<div align="center">
-<img src="https://github.com/user-attachments/assets/b4c478e3-0e01-4648-b677-b5723c0e34c8" width="400px" />
-</div>
-
-
-# Projeto SINDISEI
+# Projeto LEVEL 33 IA
 
 
 ## Descrição 
@@ -16,10 +11,14 @@ Este projeto utiliza as seguintes tecnologias:
 
 - Ferramenta **N8N**
 - Linguagem **Python**
+- Framework **Django REST**
 - Linguagem **HTML**
 - Linguagem **CSS**
 - Linguagem **JavaScript**
 - Framework **Tailwind CSS**
+- Biblioteca **React**
+- Framework **NextJS**
+- Linguagem **TypeScript**
 
 
 ## Instrução e instalação 
@@ -34,12 +33,28 @@ Certifique-se de que está corretamente configurada em sua máquina.
 ### Etapas 
 
 1. Clone o repositório em sua máquina:
+   
+1.1. Repositório Front-end:
+
+```bash 
+git clone https://github.com/jfelipeschwaab/sindsei-frontend.git
+```
+
+1.2. Repositório Back-end:
 
 ```bash 
 git clone https://github.com/jfelipeschwaab/sindsei-backend.git
 ```
 
 2. Acesse o diretório do projeto:
+
+2.1. Diretório Front-end:
+
+```bash
+cd sindsei-frontend
+```
+
+2.2. Diretório Back-end:
 
 ```bash
 cd sindsei-backend
@@ -84,15 +99,15 @@ Este projeto está licenciado sob a Licença MIT. Consulte o arquivo LICENSE par
 Agradecemos a contribuição de todos os autores e orientadores do projeto.
 
 Autores:
-- Gabriel Tavares
-- Cauã Aguiar
-- Felipe Schwaab
-- Carol Zaiatz
-- Victor Praça
-- Francisco Nascimento
-- Felipe Gaudereto
 - Bárbara Marques
+- Carol Zaiatz
+- Cauã Aguiar
+- Felipe Gaudereto
+- Francisco Nascimento
+- Gabriel Tavares
+- Victor Praça
+- Carlos Eduardo
 
 Orientadores:
-- Francisco Javier
-- Marcos Dias
+- Guilherme Felix
+- Fernando Guimarães
